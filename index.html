@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TransPorter - Valise Premiere Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Créez une valise complète de votre projet Adobe Premiere Pro. Version web." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/Transporter/assets/index-D0TfnDMo.js"></script>
+    <link rel="stylesheet" crossorigin href="/Transporter/assets/index-Btksfl-C.css">
+  </head>
+  <body class="light-theme">
+    <div id="loading-fallback" style="position:fixed;inset:0;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:10000;font-family:sans-serif;">
+      <p style="color:#0f172a;font-size:1.1rem;">Chargement de TransPorter…</p>
+      <p id="loading-error" style="color:#dc2626;font-size:0.9rem;display:none;"></p>
+    </div>
+    <div id="app">
+      <div class="title-bar"></div>
+      <header class="app-header">
+        <div class="top-bar-brand">
+          <img src="./assets/LOGO.png" alt="TransPorter" class="app-logo" />
+        </div>
+        <div class="top-bar-actions">
+          <span class="badge-web">Version Web</span>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <!-- Accueil : dépôt .prproj -->
+        <section id="welcome-screen" class="screen active">
+          <div class="welcome-upload">
+            <input id="file-input" type="file" accept=".prproj,application/octet-stream,*/*" class="file-input-hidden" />
+            <label for="file-input" class="btn-choose-file">Choisir un fichier .prproj</label>
+            <p class="drop-or">ou</p>
+            <div id="dropzone" class="dropzone" role="button" tabindex="0">
+              <span class="dropzone-text">Glissez-déposez votre projet Premiere ici</span>
+            </div>
+          </div>
+          <p class="web-hint">Ensuite, sélectionnez le dossier qui contient les médias du projet (bouton ci-dessous après analyse).</p>
+        </section>
+
+        <!-- Analyse : liste des médias + dossier + créer valise -->
+        <section id="analysis-screen" class="screen">
+          <div class="analysis-header">
+            <h2 id="analysis-title" class="analysis-title">Analyse du projet</h2>
+            <p id="analysis-subtitle" class="analysis-subtitle"></p>
+            <div class="analysis-stats">
+              <div class="stat-block">
+                <span class="stat-label">Fichiers</span>
+                <span id="stat-count" class="stat-value">0</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-label">Poids total</span>
+                <span id="stat-size" class="stat-value">0 Mo</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-label">Trouvés dans le dossier</span>
+                <span id="stat-matched" class="stat-value stat-badge">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="analysis-controls">
+            <button type="button" id="select-folder-btn" class="btn btn-primary">Sélectionner le dossier du projet</button>
+            <span id="folder-label" class="folder-label">Aucun dossier sélectionné</span>
+            <button type="button" id="toggle-select" class="btn btn-secondary">Tout (dé)sélectionner</button>
+          </div>
+
+          <div class="analysis-meta">
+            <div class="field-group">
+              <label for="suitcase-name">Nom de la valise</label>
+              <input id="suitcase-name" type="text" class="text-input" value="VALISE_PREMIERE" />
+            </div>
+          </div>
+
+          <div id="media-list" class="media-list"></div>
+
+          <div class="analysis-footer">
+            <button type="button" id="back-to-welcome" class="btn btn-ghost">Retour</button>
+            <button type="button" id="create-suitcase" class="btn btn-primary" disabled>Créer la valise (télécharger le ZIP)</button>
+          </div>
+
+          <div id="copy-status" class="copy-status" style="display: none;">
+            <div class="copy-progress-header"><span id="copy-percent" class="copy-percent">0%</span></div>
+            <div class="copy-bar-outer"><div id="copy-bar-inner" class="copy-bar-inner"></div></div>
+            <span id="copy-current" class="copy-text">Préparation…</span>
+          </div>
+        </section>
+
+        <!-- Succès -->
+        <section id="final-screen" class="screen">
+          <div class="final-container">
+            <h2 class="final-title">VALISE TÉLÉCHARGÉE</h2>
+            <p class="final-desc">Le fichier ZIP a été téléchargé. Ouvrez-le et extrayez la valise où vous le souhaitez.</p>
+            <div class="final-report">
+              <div class="final-report-item">
+                <span class="final-report-label">Nom du fichier</span>
+                <span id="final-zip-name" class="final-report-value">-</span>
+              </div>
+            </div>
+            <button type="button" id="new-project-btn" class="btn btn-primary">Nouveau projet</button>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      setTimeout(function() {
+        var fallback = document.getElementById('loading-fallback');
+        var errEl = document.getElementById('loading-error');
+        if (fallback && fallback.style.display !== 'none' && errEl) {
+          errEl.style.display = 'block';
+          errEl.innerHTML = 'Chargement trop long. Ouvrez la console (F12) et l\'onglet Réseau pour voir les erreurs.';
+        }
+      }, 10000);
+    </script>
+  </body>
+</html>
