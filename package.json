@@ -1,0 +1,25 @@
+{
+  "name": "transporter",
+  "version": "0.1.0",
+  "description": "TransPorter - Application Electron macOS pour empaqueter des projets Adobe Premiere Pro avec tous leurs médias.",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "node -e \"const h=new Date().getHours();const f=h>=5&&h<11?'startup-matin':h>=11&&h<17?'startup-aprem':h>=17&&h<22?'startup-soir':'startup-nuit';require('child_process').spawn('afplay',['src/renderer/assets/sounds/'+f+'.mp3'])\" & electron .",
+    "build": "node scripts/prebuild.js && electron-builder && node scripts/postbuild.js",
+    "postinstall": "node scripts/fix-electron-quarantine.js"
+  },
+  "keywords": [],
+  "author": "Martin (TransPorter)",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "fs-extra": "^11.3.2",
+    "glob": "^10.4.5",
+    "md5-file": "^5.0.0",
+    "pako": "^2.1.0",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3"
+  }
+}

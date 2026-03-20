@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TransPorter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Animation splash : zoom + rotation légère */
+      @keyframes splashRotate {
+        0%   { opacity: 0; transform: scale(0.88) rotate(-6deg); }
+        100% { opacity: 1; transform: scale(1.05) rotate(0deg); }
+      }
+      @keyframes splashHalo {
+        0%   { filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0)); }
+        40%  { filter: drop-shadow(0 0 32px rgba(255, 255, 255, 0.85))
+                       drop-shadow(0 0 64px rgba(180, 210, 255, 0.4)); }
+        70%  { filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5))
+                       drop-shadow(0 0 40px rgba(180, 210, 255, 0.2)); }
+        100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.25))
+                       drop-shadow(0 0 24px rgba(180, 210, 255, 0.1)); }
+      }
+      .splash-logo {
+        animation: splashRotate 3.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    </style>
+    <script>
+      (function() {
+        var d = new Date();
+        window.APP_VERSION = 'V1.19.03.26';
+      })();
+    </script>
+  </head>
+  <body class="dark-theme">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-logo-container">
+            <img src="assets/LOGO.png" alt="TRANSPORTER" class="splash-logo">
+            <span id="splash-version" class="splash-version"></span>
+        </div>
+    </div>
+    <script>
+if (window.APP_VERSION && document.getElementById('splash-version')) document.getElementById('splash-version').textContent = window.APP_VERSION;</script>
+    <!-- Title Bar pour le drag de la fenêtre (macOS) -->
+    <div class="title-bar"></div>
+    
+    <div class="app-container">
+      <header class="app-header">
+        <div class="top-bar-brand">
+          <img src="assets/LOGO.png" alt="TRANSPORTER" class="app-logo" id="changelog-logo" style="cursor:pointer;" title="Notes de version">
+          <span id="app-version" class="app-version"></span>
+        </div>
+        <div class="top-bar-nav"></div>
+        <div class="top-bar-actions">
+          <div class="top-bar-params">
+            <button type="button" id="history-toggle" class="btn btn-ghost btn-sm">Historique</button>
+            <div id="history-dropdown" class="params-dropdown history-dropdown" hidden>
+              <div class="history-header">Les 5 dernières valises</div>
+              <div id="history-list" class="history-list"></div>
+              <div id="history-empty" class="history-empty" style="display: none;">Aucune valise créée</div>
+            </div>
+          </div>
+          <div class="top-bar-params">
+            <button type="button" id="params-toggle" class="btn btn-ghost btn-sm">Paramètres</button>
+            <div id="params-dropdown" class="params-dropdown" hidden>
+              <div class="params-section">
+                <span class="params-label">Profil</span>
+                <span id="params-profile-name" class="params-profile-name">—</span>
+                <button type="button" id="params-change-profile" class="btn btn-ghost btn-sm">Changer</button>
+              </div>
+              <div class="params-section">
+                <label class="checkbox-label params-row">
+                  <input type="checkbox" id="show-ghost-files" />
+                  <span>Afficher les fichiers fantômes</span>
+                </label>
+              </div>
+              <div class="params-section">
+                <span class="params-label">Structure de la valise</span>
+                <div class="params-org-mode">
+                  <label class="radio-pill"><input type="radio" name="org-mode" value="type" checked /><span>Par type</span></label>
+                  <label class="radio-pill"><input type="radio" name="org-mode" value="original" /><span>Arborescence d'origine</span></label>
+                </div>
+              </div>
+              <div class="params-section">
+                <label class="checkbox-label params-row">
+                  <input type="checkbox" id="auto-gofile-upload" />
+                  <span>Upload Gofile automatique après création</span>
+                </label>
+              </div>
+              <div class="params-section params-section--monday">
+                <span class="params-label">Token Monday.com</span>
+                <input
+                  type="password"
+                  id="monday-token-input"
+                  class="text-input text-input--sm"
+                  placeholder="Coller le token ici"
+                  autocomplete="off"
+                />
+                <button type="button" id="monday-token-save" class="btn btn-ghost btn-sm">Enregistrer</button>
+                <span id="monday-token-status" class="params-token-status"></span>
+              </div>
+            </div>
+          </div>
+          <button id="quit-app-btn" class="btn btn-ghost btn-sm">Quitter</button>
+        </div>
+      </header>
+
+      <main class="app-main">
+      <!-- Page HOME - Sélection de profil -->
+      <section id="home-screen" class="screen active">
+        <div class="home-container">
+          <h2 class="home-title">CHOISISSEZ VOTRE PROFIL</h2>
+          <p class="home-subtitle">Sélectionnez un profil pour pré-remplir vos préférences</p>
+          
+          <div id="profiles-grid" class="profiles-grid">
+            <!-- Les profils seront ajoutés dynamiquement ici -->
+          </div>
+          
+          <div class="home-actions">
+            <button id="add-profile-home-btn" class="btn btn-primary">+ Ajouter un profil</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Écran d'accueil / drag & drop -->
+      <section id="welcome-screen" class="screen">
+        <div class="welcome-header">
+          <div class="welcome-profile-info">
+            <div class="welcome-profile-name" id="welcome-profile-name">Aucun profil sélectionné</div>
+            <button id="change-profile-btn" class="btn btn-ghost btn-sm">Changer de profil</button>
+          </div>
+        </div>
+        <div class="dropzone-container">
+          <div id="dropzone" class="dropzone">
+            <div class="dropzone-title">GLISSEZ UN PROJET PREMIERE (.PRPROJ) ICI</div>
+            <div class="dropzone-subtitle">
+              OU CLIQUEZ POUR SÉLECTIONNER UN FICHIER
+            </div>
+            <input
+              id="file-input"
+              type="file"
+              accept=".prproj"
+              class="file-input"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Écran d'analyse des médias (style Link Media Premiere) -->
+      <section id="analysis-screen" class="screen link-media-screen">
+        <div class="analysis-header">
+          <div class="analysis-header-text">
+            <h2 id="analysis-title" class="analysis-title">Médias du projet</h2>
+            <p id="analysis-subtitle" class="analysis-subtitle"></p>
+          </div>
+        </div>
+
+        <!-- Bandeau avertissement médias manquants (style Premiere Link Media) -->
+        <div id="link-media-warning" class="link-media-warning" style="display: none;">
+          <span class="link-media-warning-icon" aria-hidden="true">⚠</span>
+          <span id="link-media-warning-text" class="link-media-warning-text">Médias manquants pour ces clips :</span>
+        </div>
+
+        <!-- Zone liste + overlay GIF de chargement pendant la copie -->
+        <div class="analysis-content-and-overlay">
+        <div id="analysis-content-fade" class="analysis-content-fade">
+        <div class="analysis-meta">
+          <div class="field-group">
+            <label for="suitcase-name">Nom de la valise</label>
+            <input id="suitcase-name" type="text" class="text-input" />
+          </div>
+          <div class="field-group">
+            <label for="destination-folder">Dossier de destination</label>
+            <div class="dest-row">
+              <span id="destination-label" class="dest-label">Non défini</span>
+              <button id="choose-destination" class="btn btn-secondary">
+                Choisir…
+              </button>
+            </div>
+            <div id="destination-estimates" class="destination-estimates" style="display: none;">
+              <span id="disk-space-info" class="disk-space-info"></span>
+              <span id="copy-time-estimate" class="copy-time-estimate"></span>
+              <span id="gofile-time-estimate" class="gofile-time-estimate"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sélecteur de projet Monday -->
+        <div class="monday-project-section">
+          <div class="monday-project-header">
+            <span class="field-label">Projet Monday</span>
+            <button type="button" id="monday-refresh-btn" class="btn btn-ghost btn-sm monday-refresh-btn">↻ Actualiser</button>
+          </div>
+          <div id="monday-project-loading" class="monday-project-status" style="display:none;">Chargement…</div>
+          <div id="monday-project-error" class="monday-project-status monday-project-error" style="display:none;"></div>
+          <select id="monday-project-select" class="text-input monday-project-select">
+            <option value="">— Aucun projet lié —</option>
+          </select>
+        </div>
+
+        <div class="media-list-wrapper">
+          <div class="media-list-header">
+            <span class="media-list-th media-list-th-name">Nom du fichier</span>
+            <span class="media-list-th media-list-th-path">Chemin</span>
+            <span class="media-list-th media-list-th-size">Taille</span>
+            <span class="media-list-th media-list-th-status">Statut</span>
+            <span class="media-list-th media-list-th-select">Inclure</span>
+          </div>
+          <div id="media-list" class="media-list"></div>
+        </div>
+
+        <div class="analysis-list-actions">
+          <button id="toggle-select" class="btn btn-secondary">
+            Tout désélectionner
+          </button>
+          <button id="relink-offline" class="btn btn-primary btn-locate">
+            Localiser…
+          </button>
+        </div>
+
+        <p class="security-notice" role="note">
+          TransPorter ne modifie jamais vos fichiers d’origine : il ne fait que les lire et les copier dans la valise.
+        </p>
+        </div>
+        <!-- Overlay GIF de mise en valise (même taille que GIF de fin) -->
+        <div id="copy-loading-gif-container" class="copy-loading-gif-overlay" style="display: none;">
+          <img id="copy-loading-gif" src="" alt="" class="copy-loading-gif-img" />
+        </div>
+        </div>
+
+        <div class="analysis-footer">
+          <button id="back-to-welcome" class="btn btn-ghost">
+            RETOUR
+          </button>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <label class="checkbox-label" style="margin: 0;">
+              <input type="checkbox" id="zip-suitcase" />
+              <span>Zipper la valise</span>
+            </label>
+            <button id="create-suitcase" class="btn btn-primary" disabled>
+              Créer la valise
+            </button>
+          </div>
+        </div>
+
+        <div id="copy-status" class="copy-status">
+          <div class="copy-progress-header">
+            <span id="copy-percent" class="copy-percent">0%</span>
+          </div>
+          <div class="copy-bar-outer">
+            <div id="copy-bar-inner" class="copy-bar-inner"></div>
+          </div>
+          <div class="copy-text">
+            <span id="copy-current">En attente…</span>
+            <span id="copy-count"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Écran d’upload Gofile (affiché avant l’écran final si upload auto) -->
+      <section id="upload-screen" class="screen upload-screen">
+        <div class="upload-container">
+          <h2 class="upload-title">Envoi sur Gofile…</h2>
+          <div id="upload-gif-container" class="upload-gif-container">
+            <img id="upload-gif" src="" alt="" class="upload-gif-img" />
+          </div>
+          <p id="upload-time-estimate" class="upload-time-estimate" style="display: none;"></p>
+          <div class="upload-progress">
+            <div class="upload-progress-bar">
+              <div id="upload-progress-fill" class="upload-progress-fill" style="width: 0%"></div>
+            </div>
+            <span id="upload-progress-label" class="upload-progress-label">0%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Page finale de succès -->
+      <section id="final-screen" class="screen">
+        <div class="final-container">
+          <h2 class="final-title">VALISE CRÉÉE AVEC SUCCÈS</h2>
+          
+          <!-- Conteneur pour le GIF de célébration -->
+          <div id="celebrationGifContainer" class="celebration-gif-container">
+            <img id="celebrationGif" src="" alt="Celebration" class="celebration-gif" style="display: none;">
+          </div>
+          
+          <!-- Rapport de fin de tâche -->
+          <div class="final-report">
+            <div class="final-report-item">
+              <span class="final-report-label">Nom de la valise</span>
+              <span id="final-suitcase-name" class="final-report-value">-</span>
+            </div>
+            <div class="final-report-item">
+              <span class="final-report-label">Poids total</span>
+              <span id="final-suitcase-size" class="final-report-value">-</span>
+            </div>
+            <div class="final-report-item">
+              <span class="final-report-label">Emplacement</span>
+              <span id="final-suitcase-path" class="final-report-value">-</span>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="final-actions">
+            <button id="open-in-finder-btn" class="btn btn-primary">Ouvrir dans le Finder</button>
+            <button id="view-report-btn" class="btn btn-secondary">Voir le rapport complet</button>
+          </div>
+
+          <!-- Bouton Gofile -->
+          <div class="gofile-section">
+            <p id="gofile-upload-estimate" class="gofile-upload-estimate" style="display: none;"></p>
+            <button id="btn-gofile-upload" class="btn btn-secondary">
+              Créer un lien Gofile
+            </button>
+            <div id="gofile-progress" class="gofile-progress hidden">
+              <div class="gofile-progress-bar">
+                <div id="gofile-progress-fill" class="gofile-progress-fill" style="width: 0%"></div>
+              </div>
+              <span id="gofile-progress-label" class="gofile-progress-label">0%</span>
+            </div>
+            <div id="gofile-result" class="gofile-result hidden">
+              <a id="gofile-link" href="#" target="_blank" class="gofile-link"></a>
+              <button id="btn-copy-gofile-link" class="btn btn-secondary btn-small">Copier le lien</button>
+            </div>
+            <div id="gofile-error" class="gofile-error hidden"></div>
+          </div>
+        </div>
+      </section>
+      </main>
+    </div>
+
+    <!-- Modale de création/édition de profil -->
+    <div id="profile-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="profile-modal-title">Nouveau profil</h3>
+          <button id="profile-modal-close" class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label for="profile-name">Nom *</label>
+            <input id="profile-name" type="text" class="text-input" required />
+          </div>
+          <div class="field-group">
+            <label for="profile-firstname">Prénom *</label>
+            <input id="profile-firstname" type="text" class="text-input" required />
+          </div>
+          <div class="field-group">
+            <label for="profile-email">Email (optionnel)</label>
+            <input id="profile-email" type="email" class="text-input" />
+          </div>
+          
+          <div class="field-group">
+            <label>Photo de profil</label>
+            <div class="profile-photo-section">
+              <div id="profile-photo-preview" class="profile-photo-preview">
+                <span></span>
+              </div>
+              <div>
+                <button type="button" class="btn btn-secondary" id="select-profile-photo-btn">Choisir une photo</button>
+                <button type="button" class="btn btn-secondary" id="remove-profile-photo-btn" style="display: none;">Supprimer</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="field-group">
+            <label>Palette de couleurs personnalisée</label>
+            <div class="color-palette-group">
+              <div class="color-picker-item">
+                <label>Couleur principale</label>
+                <input type="color" id="profile-color1" class="color-picker" value="#2563eb">
+              </div>
+              <div class="color-picker-item">
+                <label>Couleur secondaire</label>
+                <input type="color" id="profile-color2" class="color-picker" value="#0f172a">
+              </div>
+              <div class="color-picker-item">
+                <label>Couleur accent</label>
+                <input type="color" id="profile-color3" class="color-picker" value="#ffffff">
+              </div>
+            </div>
+          </div>
+          
+          <div class="field-group">
+            <label for="profile-initials-suffix">Suffixe d'initiales pour le dossier valise</label>
+            <input id="profile-initials-suffix" type="text" class="text-input" placeholder="Ex: MP, AP, etc." maxlength="5" style="text-transform: uppercase;" />
+            <small style="color: var(--text-secondary); margin-top: 5px; display: block;">
+              Ce suffixe sera ajouté au nom du dossier projet dans la valise (ex: PROJET_MP)
+            </small>
+          </div>
+          
+          <div class="field-group">
+            <label for="profile-org-mode">Structure par défaut</label>
+            <div class="org-mode">
+              <label class="radio-pill">
+                <input type="radio" name="profile-org-mode" value="type" checked />
+                <span>Par type</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="profile-org-mode" value="original" />
+                <span>Arborescence d'origine</span>
+              </label>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="profile-favorite-dest">Dossier de destination favori</label>
+            <div class="dest-row">
+              <span id="profile-favorite-dest-label" class="dest-label">Non défini</span>
+              <button id="profile-choose-favorite-dest" class="btn btn-secondary">Choisir…</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div style="flex: 1;">
+            <button id="profile-modal-delete" class="btn btn-danger" style="display: none;">Supprimer</button>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button id="profile-modal-cancel" class="btn btn-ghost">Annuler</button>
+            <button id="profile-modal-save" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Relier les médias (style Premiere Link Media) -->
+    <div id="relink-modal" class="modal relink-modal--premiere">
+      <div class="modal-content relink-modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+          <h3>Relier les médias</h3>
+          <button id="relink-modal-close" class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="relink-modal-intro">
+            Médias manquants pour ces clips. Cliquez sur « Localiser » pour indiquer le fichier.
+          </p>
+          <div id="relink-media-list" class="relink-media-list">
+            <!-- Les médias offline seront ajoutés dynamiquement ici -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div style="flex: 1;"></div>
+          <div style="display: flex; gap: 12px;">
+            <button id="relink-modal-cancel" class="btn btn-ghost">Annuler</button>
+            <button id="relink-modal-apply" class="btn btn-primary" disabled>Appliquer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>if (window.APP_VERSION && document.getElementById('app-version')) document.getElementById('app-version').textContent = window.APP_VERSION;</script>
+    <script src="app.js"></script>
+
+    <!-- Modale Changelog -->
+    <div id="changelog-modal" class="modal">
+      <div class="modal-content" style="max-width: 640px;">
+        <div class="modal-header">
+          <h3>Notes de version — TransPorter</h3>
+          <button id="changelog-modal-close" class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          <pre id="changelog-content" style="
+            white-space: pre-wrap;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.88em;
+            line-height: 1.6;
+            color: var(--text-primary);
+            max-height: 60vh;
+            overflow-y: auto;
+            margin: 0;
+          ">Chargement…</pre>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button id="changelog-modal-ok" class="btn btn-primary">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+  </html>
+
+

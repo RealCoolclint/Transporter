@@ -1,0 +1,37 @@
+# Déploie la version web sur GitHub Pages via la branche gh-pages
+name: Deploy Web (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # requis pour pousser sur la branche gh-pages
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install and build (web)
+        run: |
+          npm ci --prefix web
+          npm run build --prefix web
+        env:
+          BASE_URL: /Transporter/
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web/dist
+          force_orphan: true

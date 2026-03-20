@@ -1,0 +1,23 @@
+{
+  "appId": "com.valisepremiere.app",
+  "productName": "TransPorter",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "src/**/*",
+    "package.json",
+    "CHANGELOG.md"
+  ],
+  "asarUnpack": [
+    "src/renderer/assets/sounds/**",
+    "src/renderer/assets/GIF/**"
+  ],
+  "mac": {
+    "icon": "build/icon.icns",
+    "target": ["dmg", "zip"],
+    "category": "public.app-category.video"
+  }
+}
+
+
