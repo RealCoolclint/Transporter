@@ -159,60 +159,15 @@ body {
 /* ============================================
    SPLASH SCREEN
    ============================================ */
-.splash-screen {
+#splashScreen {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  opacity: 0;
-}
-
-.splash-logo-container {
+  inset: 0;
+  background: #0a0f1e;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  width: 100%;
-  height: 100%;
-}
-
-.splash-version {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.5px;
-}
-
-.splash-logo {
-  max-width: 300px;
-  max-height: 300px;
-  width: auto;
-  height: auto;
-  opacity: 1;
-  /* L'animation est gérée par JavaScript pour un contrôle précis */
-  transform: scale(0.9); /* Taille initiale gérée par JS */
-}
-
-@keyframes logoReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  z-index: 9999;
 }
 
 /* ============================================
@@ -2208,3 +2163,11 @@ body {
 .params-section--monday { flex-direction: column; align-items: flex-start; gap: 6px; }
 .params-token-status { font-size: 0.75rem; color: var(--success, #2ecc71); }
 .text-input--sm { font-size: 0.8rem; padding: 4px 8px; width: 100%; box-sizing: border-box; }
+
+.app-patch-header {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
