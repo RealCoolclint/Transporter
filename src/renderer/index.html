@@ -93,6 +93,22 @@
       </header>
 
       <main class="app-main">
+      <!-- Session Launcher connectée -->
+      <section id="session-screen" class="screen" style="display:none;">
+        <div class="home-container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;height:100%;">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--bg-tertiary,#1e293b);display:flex;align-items:center;justify-content:center;">
+            <span id="session-avatar-initials" style="font-size:2rem;font-weight:700;color:white;"></span>
+          </div>
+          <div style="text-align:center;">
+            <div id="session-profile-name" style="font-size:1.4rem;font-weight:700;color:white;"></div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;">Via Launcher</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button id="session-continue-btn" class="btn btn-primary">Continuer</button>
+            <button id="session-change-btn" class="btn btn-ghost">Changer de profil</button>
+          </div>
+        </div>
+      </section>
       <!-- Page HOME - Sélection de profil -->
       <section id="home-screen" class="screen active">
         <div class="home-container">

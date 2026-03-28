@@ -62,6 +62,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   await new Promise(resolve => setTimeout(resolve, 4800));
   // ── Fin Mercury Opening ───────────────────────────────────────
 
+  // ── Protocole Session Launcher ────────────────────────────────
+  const _launcherSession = window.valisePremiere
+    ? await window.valisePremiere.getLauncherSession()
+    : { connected: false };
+  window._launcherSession = _launcherSession;
+  // ── Fin Protocole Session ─────────────────────────────────────
+
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('file-input');
   const paramsToggle = document.getElementById('params-toggle');
@@ -284,6 +291,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const showScreen = (screen) => {
+    if (screen === 'home' && window._launcherSession && window._launcherSession.connected) {
+      const ss = document.getElementById('session-screen');
+      const hs = document.getElementById('home-screen');
+      document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
+      if (ss) { ss.style.display = ''; ss.classList.add('active'); }
+      return;
+    }
     // Masquer tous les écrans
     if (homeScreen) homeScreen.classList.remove('active');
     if (welcomeScreen) welcomeScreen.classList.remove('active');
@@ -1536,7 +1550,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Charger les profils au démarrage
-  await loadProfiles();
+  if (_launcherSession.connected) {
+    const sessionScreen = document.getElementById('session-screen');
+    const homeScreen = document.getElementById('home-screen');
+    if (sessionScreen && homeScreen) {
+      homeScreen.classList.remove('active');
+      sessionScreen.style.display = '';
+      sessionScreen.classList.add('active');
+      const initials = _launcherSession.profileName
+        ? _launcherSession.profileName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : '?';
+      const nameEl = document.getElementById('session-profile-name');
+      const initialsEl = document.getElementById('session-avatar-initials');
+      if (nameEl) nameEl.textContent = _launcherSession.profileName || '';
+      if (initialsEl) initialsEl.textContent = initials;
+
+      document.getElementById('session-continue-btn').addEventListener('click', () => {
+        const tempProfile = {
+          id: _launcherSession.profileId,
+          firstName: _launcherSession.profileName ? _launcherSession.profileName.split(' ')[0] : '',
+          name: _launcherSession.profileName ? _launcherSession.profileName.split(' ').slice(1).join(' ') : '',
+          initials: initials,
+          role: _launcherSession.profileRole || 'user',
+          isAdmin: _launcherSession.profileRole === 'admin',
+          fromLauncher: true
+        };
+        sessionScreen.classList.remove('active');
+        sessionScreen.style.display = 'none';
+        // Injecter le profil temporaire et passer à welcome
+        currentProfile = tempProfile;
+        applyCurrentProfile();
+        setProfileDisplayName(`${tempProfile.firstName} ${tempProfile.name}`.trim());
+        showScreen('welcome');
+      });
+
+      document.getElementById('session-change-btn').addEventListener('click', async () => {
+        sessionScreen.classList.remove('active');
+        sessionScreen.style.display = 'none';
+        homeScreen.classList.add('active');
+        await loadProfiles();
+      });
+    }
+  } else {
+    await loadProfiles();
+  }
   
   // Afficher HOME en premier (déjà fait dans le HTML avec class="active")
   // Si un profil est déjà sélectionné (par exemple depuis une session précédente),

@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld('valisePremiere', {
   mondaySaveToken: (token) => ipcRenderer.invoke('monday-save-token', token),
   mondayLoadProjects: (params) => ipcRenderer.invoke('monday-load-projects', params),
   mondayCreateSubitem: (params) => ipcRenderer.invoke('monday-create-subitem', params),
+  getLauncherSession: () => ipcRenderer.invoke('get-launcher-session'),
 });
 
 

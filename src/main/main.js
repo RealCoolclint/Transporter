@@ -22,6 +22,7 @@ const fsExtra = require('fs-extra');
 const glob = require('glob');
 const archiver = require('archiver');
 const { startCopy } = require('./file-manager');
+const { readLauncherSession } = require('./session-reader');
 const {
   loadProfiles,
   createProfile,
@@ -418,6 +419,7 @@ ipcMain.handle('start-copy', async (_event, payload) => {
 });
 
 // IPC: gestion des profils utilisateur
+ipcMain.handle('get-launcher-session', () => global.launcherSession || { connected: false });
 ipcMain.handle('profiles-load', async () => {
   try {
     const profiles = await loadProfiles();
@@ -1054,6 +1056,8 @@ ipcMain.handle('monday-create-subitem', async (_event, { token, parentItemId, su
 });
 
 app.whenReady().then(async () => {
+  global.launcherSession = await readLauncherSession();
+  console.log('[Session] mode:', global.launcherSession.connected ? 'connecté' : 'standalone');
   createWindow();
   await loadUploadSpeed();
 
