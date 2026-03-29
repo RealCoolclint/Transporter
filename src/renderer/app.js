@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   runSplash(() => {
     if (splashScreen) splashScreen.style.display = 'none';
-    if (appContainer) appContainer.style.opacity = '1';
   });
 
   await new Promise(resolve => setTimeout(resolve, 4800));
@@ -92,6 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const setProfileDisplayName = (displayName) => {
     if (welcomeProfileName) welcomeProfileName.textContent = displayName;
     if (paramsProfileName) paramsProfileName.textContent = displayName || '—';
+    const headerProfileDisplayName = document.getElementById('header-profile-display-name');
+    if (headerProfileDisplayName) headerProfileDisplayName.textContent = displayName || '—';
   };
 
   // Éléments HOME screen
@@ -168,6 +169,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   let mediaFiles = [];
   let selectedProjectPath = null;
   let lastCopyResult = null;
+
+  const syncHeaderProfileAvatar = () => {
+    const headerAvatar = document.getElementById('header-profile-avatar');
+    if (!headerAvatar) return;
+
+    let src = '';
+    let alt = '';
+
+    if (currentProfile && currentProfile.photoPath) {
+      src = `file://${currentProfile.photoPath}`;
+      alt = currentProfile.isGuest
+        ? (currentProfile.name || '')
+        : `${currentProfile.firstName || ''} ${currentProfile.name || ''}`.trim();
+    } else if (_launcherSession.connected && _launcherSession.profileAvatar) {
+      src = _launcherSession.profileAvatar;
+      alt = _launcherSession.profileName || '';
+    }
+
+    if (src) {
+      headerAvatar.src = src;
+      headerAvatar.alt = alt;
+      headerAvatar.style.display = '';
+    } else {
+      headerAvatar.removeAttribute('src');
+      headerAvatar.alt = '';
+      headerAvatar.style.display = 'none';
+    }
+  };
 
   const formatBytes = (bytes) => {
     if (!bytes || bytes <= 0) return '0 o';
@@ -1161,7 +1190,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const displayName = profile.isGuest ? profile.name : `${profile.firstName} ${profile.name}`;
     setProfileDisplayName(displayName);
-    
+    syncHeaderProfileAvatar();
+
     // Passer à l'écran welcome
     showScreen('welcome');
     
@@ -1491,6 +1521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentProfile && currentProfile.id === profileId) {
           currentProfile = null;
           setProfileDisplayName('Aucun profil sélectionné');
+          syncHeaderProfileAvatar();
           showScreen('home');
         }
         
@@ -1553,6 +1584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (_launcherSession.connected) {
     const sessionScreen = document.getElementById('session-screen');
     const homeScreen = document.getElementById('home-screen');
+    if (appContainer) appContainer.style.opacity = '1';
     if (sessionScreen && homeScreen) {
       homeScreen.classList.remove('active');
       sessionScreen.style.display = '';
@@ -1562,6 +1594,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const nameEl = document.getElementById('session-profile-name');
       const initialsEl = document.getElementById('session-avatar-initials');
       if (nameEl) nameEl.textContent = _launcherSession.profileName || '';
+      setProfileDisplayName(_launcherSession.profileName || '—');
+      syncHeaderProfileAvatar();
       if (initialsEl) initialsEl.textContent = initials;
 
       document.getElementById('session-continue-btn').addEventListener('click', () => {
@@ -1580,6 +1614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentProfile = tempProfile;
         applyCurrentProfile();
         setProfileDisplayName(`${tempProfile.firstName} ${tempProfile.name}`.trim());
+        syncHeaderProfileAvatar();
         showScreen('welcome');
       });
 
@@ -1591,6 +1626,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   } else {
+    if (appContainer) appContainer.style.opacity = '1';
     await loadProfiles();
   }
   

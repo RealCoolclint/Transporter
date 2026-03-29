@@ -495,7 +495,10 @@ ipcMain.handle('select-profile-photo', async () => {
 // IPC: lister les GIFs de célébration
 ipcMain.handle('list-celebration-gifs', async () => {
   try {
-    const gifsDir = path.join(__dirname, '..', 'renderer', 'assets', 'GIF');
+    const base = __dirname.includes('app.asar')
+      ? __dirname.replace('app.asar', 'app.asar.unpacked')
+      : __dirname;
+    const gifsDir = path.join(base, '..', 'renderer', 'assets', 'GIF');
     
     // Vérifier si le dossier existe
     if (!await fsExtra.pathExists(gifsDir)) {
@@ -522,7 +525,10 @@ ipcMain.handle('list-celebration-gifs', async () => {
 // IPC: lister les GIFs de "mise en valise" (pendant la copie)
 ipcMain.handle('list-loading-gifs', async () => {
   try {
-    const loadingDir = path.join(__dirname, '..', 'renderer', 'assets', 'loading');
+    const base = __dirname.includes('app.asar')
+      ? __dirname.replace('app.asar', 'app.asar.unpacked')
+      : __dirname;
+    const loadingDir = path.join(base, '..', 'renderer', 'assets', 'loading');
     if (!(await fsExtra.pathExists(loadingDir))) return [];
     const files = await fsExtra.readdir(loadingDir);
     const gifFiles = files.filter(file => file.toLowerCase().endsWith('.gif'));
@@ -536,7 +542,10 @@ ipcMain.handle('list-loading-gifs', async () => {
 // IPC: lister les GIFs d'écran "upload Gofile" (avant l'écran final)
 ipcMain.handle('list-upload-gifs', async () => {
   try {
-    const uploadDir = path.join(__dirname, '..', 'renderer', 'assets', 'upload');
+    const base = __dirname.includes('app.asar')
+      ? __dirname.replace('app.asar', 'app.asar.unpacked')
+      : __dirname;
+    const uploadDir = path.join(base, '..', 'renderer', 'assets', 'upload');
     if (!(await fsExtra.pathExists(uploadDir))) return [];
     const files = await fsExtra.readdir(uploadDir);
     const gifFiles = files.filter(file => file.toLowerCase().endsWith('.gif'));
@@ -857,7 +866,7 @@ ipcMain.handle('read-changelog', async () => {
 ipcMain.handle('monday-get-token', async () => {
   try {
     const config = await getMondayConfig();
-    return { ok: true, token: config.token || '' };
+    return { ok: true, token: config.token || global.launcherSession?.apiKeys?.monday || '' };
   } catch (e) {
     return { ok: false, error: e.message };
   }

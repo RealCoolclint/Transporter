@@ -11,7 +11,9 @@
   ],
   "asarUnpack": [
     "src/renderer/assets/sounds/**",
-    "src/renderer/assets/GIF/**"
+    "src/renderer/assets/GIF/**",
+    "src/renderer/assets/loading/**",
+    "src/renderer/assets/upload/**"
   ],
   "mac": {
     "icon": "build/icon.icns",

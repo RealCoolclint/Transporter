@@ -2,6 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com; connect-src 'self' https://api.monday.com https://api.gofile.io https://store1.gofile.io https://store2.gofile.io https://store3.gofile.io https://store4.gofile.io https://store5.gofile.io https://store6.gofile.io https://store7.gofile.io https://store8.gofile.io https://api.resend.com;">
     <title>TransPorter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +12,10 @@
     <script>
       (function() {
         var d = new Date();
-        window.APP_VERSION = 'V1.19.03.26';
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        window.APP_VERSION = 'V1.' + dd + '.' + mm + '.' + yy;
       })();
     </script>
   </head>
@@ -40,6 +44,10 @@
         </div>
         <div class="top-bar-nav"></div>
         <div class="top-bar-actions">
+          <div class="header-user-strip" aria-label="Profil actif">
+            <img id="header-profile-avatar" class="header-profile-avatar" src="" alt="" />
+            <span id="header-profile-display-name" class="header-profile-display-name"></span>
+          </div>
           <div class="top-bar-params">
             <button type="button" id="history-toggle" class="btn btn-ghost btn-sm">Historique</button>
             <div id="history-dropdown" class="params-dropdown history-dropdown" hidden>
